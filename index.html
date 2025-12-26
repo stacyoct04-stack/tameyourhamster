@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>디테일 햄스터 길들이기</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Gaegu&display=swap');
+
+  body {
+    background: #f0f2f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: 'Gaegu', cursive;
+    margin: 0;
+    padding-top: 20px;
+  }
+
+  /* 이름 설정 */
+  .setup { margin-bottom: 20px; }
+  input { padding: 8px; border: 2px solid #edaf6b; border-radius: 10px; font-family: inherit; outline: none; }
+  button { padding: 8px 15px; background: #edaf6b; border: none; border-radius: 10px; color: white; cursor: pointer; font-family: inherit; font-size: 16px; }
+
+  /* 햄스터 방 */
+  #room {
+    width: 400px;
+    height: 350px;
+    background: #fff9ed;
+    border: 10px solid #e2b37a;
+    border-radius: 30px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  /* 햄스터 몸체 */
+  .hamster {
+    width: 150px;
+    height: 120px;
+    background: #f4bd7d; /* 메인 색상 */
+    border-radius: 50% 50% 45% 45%;
+    position: relative;
+    transition: 0.3s;
+    z-index: 5;
+  }
+
+  /* 점박이 무늬 (box-shadow 활용) */
+  .hamster::before {
+    content: '';
+    position: absolute;
+    width: 40px;
+    height: 30px;
+    background: #d69a5a; /* 진한 털 색 */
+    border-radius: 50%;
+    top: 10px;
+    left: 10px;
+    box-shadow: 90px 20px 0 #d69a5a, 40px -5px 0 #d69a5a;
+    opacity: 0.8;
+  }
+
+  /* 귀 */
+  .ear {
+    width: 40px;
+    height: 45px;
+    background: #f4bd7d;
+    border-radius: 50%;
+    position: absolute;
+    top: -15px;
+    z-index: -1;
+    transition: 0.3s;
+  }
+  .ear.left { left: 15px; }
+  .ear.right { right: 15px; }
+  .ear::after { /* 귓구멍 */
+    content: '';
+    position: absolute;
+    width: 20px; height: 25px; background: #ef9a9a;
+    border-radius: 50%; top: 5px; left: 10px;
+  }
+
+  /* 눈 */
+  .eye {
+    width: 14px; height: 14px; background: #222;
+    border-radius: 50%; position: absolute; top: 45px; transition: 0.2s;
+  }
+  .eye.left { left: 40px; }
+  .eye.right { right: 40px; }
+  .eye::before { /* 눈동자 반사광 */
+    content: ''; position: absolute; width: 4px; height: 4px;
+    background: white; border-radius: 50%; top: 2px; left: 2px;
+  }
+
+  /* 코와 수염 */
+  .nose-area {
+    position: absolute;
+    top: 65px; left: 50%;
+    transform: translateX(-50%);
+  }
+  .nose {
+    width: 8px; height: 6px; background: #ff8a80;
+    border-radius: 50%; margin: 0 auto;
+  }
+  .whiskers {
+    position: absolute; top: 2px; width: 100px; height: 20px;
+    left: 50%; transform: translateX(-50%);
+  }
+  .whiskers::before, .whiskers::after {
+    content: '=='; font-family: Arial; font-size: 20px; color: #8d6e63;
+    position: absolute; letter-spacing: -2px; opacity: 0.5;
+  }
+  .whiskers::before { left: -10px; transform: rotate(-5deg); }
+  .whiskers::after { right: -10px; transform: rotate(5deg) scaleX(-1); }
+
+  /* 입 */
+  .mouth {
+    width: 12px; height: 8px; border: 2px solid #8d6e63;
+    border-top: none; border-radius: 0 0 10px 10px;
+    position: absolute; bottom: 25px; left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* 상태 애니메이션 */
+  .petting .ear { transform: translateY(15px); }
+  .happy .eye { transform: scaleY(0.2); }
+  .happy .mouth { background: #ff8a80; border: none; height: 10px; }
+
+  /* 떨어지는 아이템 */
+  .item { position: absolute; top: -50px; font-size: 30px; animation: fall 1s forwards; }
+  @keyframes fall { to { transform: translateY(240px); opacity: 0; } }
+
+  .controls { margin-top: 20px; }
+  #message { font-size: 20px; color: #555; font-weight: bold; margin-top: 15px; }
+  #target-name { font-size: 24px; color: #edaf6b; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<h1>🐹 힐링 햄스터 키우기 🐾</h1>
+
+<div class="setup">
+  <input type="text" id="nameInput" placeholder="이름을 입력하세요">
+  <button onclick="setName()">이름 결정</button>
+</div>
+
+<div id="room">
+  <div id="target-name">나의 햄스터</div>
+  <div class="hamster" id="hamster">
+    <div class="ear left"></div>
+    <div class="ear right"></div>
+    <div class="eye left"></div>
+    <div class="eye right"></div>
+    <div class="nose-area">
+      <div class="whiskers"></div>
+      <div class="nose"></div>
+    </div>
+    <div class="mouth"></div>
+  </div>
+</div>
+
+<div class="controls">
+  <button onclick="action('feed')">🌻 간식 주기</button>
+  <button onclick="action('water')">💧 물 주기</button>
+  <button onclick="action('pet')">🖐️ 쓰다듬기</button>
+</div>
+
+<p id="message">햄스터를 돌보며 스트레스를 날려보세요!</p>
+
+<script>
+  const hamster = document.getElementById('hamster');
+  const message = document.getElementById('message');
+  const targetName = document.getElementById('target-name');
+
+  function setName() {
+    const name = document.getElementById('nameInput').value;
+    if(name) {
+      targetName.innerText = `나의 소중한 [${name}]`;
+      message.innerText = `${name}(이)가 방에 들어왔어요!`;
+    }
+  }
+
+  function action(type) {
+    hamster.className = "hamster"; // 초기화
+    const room = document.getElementById('room');
+    
+    if(type === 'feed') {
+      dropItem('🌻');
+      hamster.classList.add('happy');
+      message.innerText = "오독오독.. 해바라기씨가 제일 맛있어! 🌻";
+    } else if(type === 'water') {
+      dropItem('💧');
+      hamster.classList.add('happy');
+      message.innerText = "시원한 물을 마시니 살 것 같아요! 💧";
+    } else if(type === 'pet') {
+      hamster.classList.add('happy', 'petting');
+      message.innerText = "부드러운 손길에 기분이 좋아져요.. 💤";
+    }
+
+    setTimeout(() => { hamster.className = "hamster"; }, 2000);
+  }
+
+  function dropItem(emoji) {
+    const item = document.createElement('div');
+    item.innerText = emoji;
+    item.className = 'item';
+    item.style.left = '50%';
+    item.style.transform = 'translateX(-50%)';
+    document.getElementById('room').appendChild(item);
+    setTimeout(() => item.remove(), 1000);
+  }
+</script>
+</body>
+</html>
